@@ -1,5 +1,5 @@
-// In dev: requests go to /api (Vite proxies → localhost:5001).
-// In production: VITE_API_URL must be set to the backend URL.
+// Dev: requests go to /api (Vite proxies → localhost:5001).
+// Production: VITE_API_URL must be set to the backend URL.
 const BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api`
   : '/api';
@@ -20,12 +20,18 @@ async function req(method, path, body) {
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch {
-    throw new Error('Cannot reach server. Make sure the backend is running on port 5001.');
+    throw new Error('Cannot reach server. Check your connection or try again.');
   }
 
   if (res.status === 401) {
     localStorage.removeItem('fh_token');
     window.dispatchEvent(new Event('auth:expired'));
+  }
+
+  // Guard against non-JSON responses (e.g. Render's 502/504 HTML pages)
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    throw new Error(`Server error (${res.status}). Please try again in a moment.`);
   }
 
   const data = await res.json();

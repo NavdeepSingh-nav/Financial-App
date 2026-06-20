@@ -15,39 +15,38 @@ function issueToken(user) {
   );
 }
 
-// Register — open to everyone
-router.post('/register', async (req, res) => {
-  const { email, password } = req.body;
+router.post('/register', async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    if (!email?.trim()) return res.status(400).json({ message: 'Email is required.' });
+    if (!password || password.length < 8)
+      return res.status(400).json({ message: 'Password must be at least 8 characters.' });
 
-  if (!email?.trim()) return res.status(400).json({ message: 'Email is required.' });
-  if (!password || password.length < 8)
-    return res.status(400).json({ message: 'Password must be at least 8 characters.' });
+    const existing = await User.findOne({ email: email.toLowerCase().trim() });
+    if (existing) return res.status(409).json({ message: 'An account with this email already exists.' });
 
-  const existing = await User.findOne({ email: email.toLowerCase().trim() });
-  if (existing) return res.status(409).json({ message: 'An account with this email already exists.' });
-
-  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
-  const user = await User.create({ email: email.toLowerCase().trim(), passwordHash });
-  res.status(201).json({ token: issueToken(user), email: user.email });
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    const user = await User.create({ email: email.toLowerCase().trim(), passwordHash });
+    res.status(201).json({ token: issueToken(user), email: user.email });
+  } catch (err) { next(err); }
 });
 
-// Login
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-  if (!email?.trim() || !password) {
-    return res.status(400).json({ message: 'Email and password are required.' });
-  }
+router.post('/login', async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    if (!email?.trim() || !password)
+      return res.status(400).json({ message: 'Email and password are required.' });
 
-  const user = await User.findOne({ email: email.toLowerCase().trim() });
-  if (!user) return res.status(401).json({ message: 'No account found with this email.' });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) return res.status(401).json({ message: 'No account found with this email.' });
 
-  const ok = await user.verifyPassword(password);
-  if (!ok) return res.status(401).json({ message: 'Incorrect password.' });
+    const ok = await user.verifyPassword(password);
+    if (!ok) return res.status(401).json({ message: 'Incorrect password.' });
 
-  res.json({ token: issueToken(user), email: user.email });
+    res.json({ token: issueToken(user), email: user.email });
+  } catch (err) { next(err); }
 });
 
-// Verify token
 router.get('/me', requireAuth, (req, res) => {
   res.json({ userId: req.user.userId, email: req.user.email });
 });

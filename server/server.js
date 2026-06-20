@@ -33,4 +33,13 @@ app.use((err, _req, res, _next) => {
 });
 
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+
+  // Keep Render free-tier service alive (pings self every 14 min to prevent sleep)
+  if (process.env.RENDER_EXTERNAL_URL) {
+    setInterval(() => {
+      fetch(`${process.env.RENDER_EXTERNAL_URL}/api/health`).catch(() => {});
+    }, 14 * 60 * 1000);
+  }
+});

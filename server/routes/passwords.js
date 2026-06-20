@@ -17,29 +17,35 @@ function toClient(doc) {
   };
 }
 
-router.get('/', async (req, res) => {
-  const docs = await Password.find({ userId: req.user.userId }).sort({ createdAt: -1 });
-  res.json(docs.map(toClient));
+router.get('/', async (req, res, next) => {
+  try {
+    const docs = await Password.find({ userId: req.user.userId }).sort({ createdAt: -1 });
+    res.json(docs.map(toClient));
+  } catch (err) { next(err); }
 });
 
-router.post('/', async (req, res) => {
-  const { site, username, password, note } = req.body;
-  if (!site?.trim() || !username?.trim() || !password?.trim()) {
-    return res.status(400).json({ message: 'site, username and password are required.' });
-  }
-  const doc = await Password.create({
-    userId: req.user.userId,
-    site: site.trim(),
-    usernameEncrypted: encrypt(username),
-    passwordEncrypted: encrypt(password),
-    noteEncrypted: note ? encrypt(note) : '',
-  });
-  res.status(201).json(toClient(doc));
+router.post('/', async (req, res, next) => {
+  try {
+    const { site, username, password, note } = req.body;
+    if (!site?.trim() || !username?.trim() || !password?.trim()) {
+      return res.status(400).json({ message: 'site, username and password are required.' });
+    }
+    const doc = await Password.create({
+      userId: req.user.userId,
+      site: site.trim(),
+      usernameEncrypted: encrypt(username),
+      passwordEncrypted: encrypt(password),
+      noteEncrypted: note ? encrypt(note) : '',
+    });
+    res.status(201).json(toClient(doc));
+  } catch (err) { next(err); }
 });
 
-router.delete('/:id', async (req, res) => {
-  await Password.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
-  res.json({ ok: true });
+router.delete('/:id', async (req, res, next) => {
+  try {
+    await Password.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
 });
 
 module.exports = router;

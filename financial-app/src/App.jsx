@@ -60,10 +60,22 @@ export default function App() {
     setPage('dashboard');
   }
 
+  async function refreshAll() {
+    const [fin, exp, pwd] = await Promise.all([api.getFinancial(), api.getExpenses(), api.getPasswords()]);
+    setFinancialEntries(fin);
+    setExpenses(exp);
+    setPasswords(pwd);
+  }
+
   // ── Financial CRUD ───────────────────────────────────
   async function addFinancialEntry(data) {
-    const created = await api.addFinancial(data);
-    setFinancialEntries((prev) => [created, ...prev]);
+    try {
+      const created = await api.addFinancial(data);
+      setFinancialEntries((prev) => [created, ...prev]);
+    } catch (err) {
+      await refreshAll().catch(() => {});
+      throw err;
+    }
   }
   async function deleteFinancialEntry(id) {
     await api.deleteFinancial(id);
@@ -72,8 +84,13 @@ export default function App() {
 
   // ── Expense CRUD ─────────────────────────────────────
   async function addExpense(data) {
-    const created = await api.addExpense(data);
-    setExpenses((prev) => [created, ...prev]);
+    try {
+      const created = await api.addExpense(data);
+      setExpenses((prev) => [created, ...prev]);
+    } catch (err) {
+      await refreshAll().catch(() => {});
+      throw err;
+    }
   }
   async function deleteExpense(id) {
     await api.deleteExpense(id);
@@ -82,8 +99,13 @@ export default function App() {
 
   // ── Password CRUD ────────────────────────────────────
   async function addPassword(data) {
-    const created = await api.addPassword(data);
-    setPasswords((prev) => [created, ...prev]);
+    try {
+      const created = await api.addPassword(data);
+      setPasswords((prev) => [created, ...prev]);
+    } catch (err) {
+      await refreshAll().catch(() => {});
+      throw err;
+    }
   }
   async function deletePassword(id) {
     await api.deletePassword(id);
