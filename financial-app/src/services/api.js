@@ -28,8 +28,9 @@ async function req(method, path, body, { _retry } = {}) {
     window.dispatchEvent(new Event('auth:expired'));
   }
 
-  // Server warming up (Render free-tier cold start) — retry once after a short wait
-  if (res.status === 503 && !_retry) {
+  // Retry GETs on 503 (cold start). Never retry POSTs — a duplicate write would
+  // create two entries. POST failures fall through to App.jsx's refreshAll() instead.
+  if (res.status === 503 && !_retry && method === 'GET') {
     await new Promise((resolve) => setTimeout(resolve, 3000));
     return req(method, path, body, { _retry: true });
   }
