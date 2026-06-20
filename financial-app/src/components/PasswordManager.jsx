@@ -78,6 +78,7 @@ export default function PasswordManager({ passwords, onAdd, onDelete }) {
       <div className="form-card">
         <h3>Save New Password</h3>
         <form onSubmit={handleSubmit}>
+          {/* Row 1: Site | Username | Password */}
           <div className="form-row">
             <div className="form-field">
               <label>Site / App</label>
@@ -105,24 +106,33 @@ export default function PasswordManager({ passwords, onAdd, onDelete }) {
                   ⚡ Generate
                 </button>
               </div>
-              {form.password && (
-                <>
-                  <div className="pw-strength">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div key={i} className={`pw-strength-bar ${i <= strength.score ? `filled ${strength.cls}` : ''}`} />
-                    ))}
-                  </div>
-                  <div className={`pw-strength-label ${strength.cls}`}>{strength.label} password</div>
-                </>
-              )}
             </div>
-            <div className="form-field">
-              <label>Note</label>
-              <input placeholder="Optional note"
+          </div>
+
+          {/* Strength meter — sits between rows, doesn't break alignment */}
+          {form.password && (
+            <div style={{ marginTop: 6, marginBottom: 2 }}>
+              <div className="pw-strength">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className={`pw-strength-bar ${i <= strength.score ? `filled ${strength.cls}` : ''}`} />
+                ))}
+              </div>
+              <div className={`pw-strength-label ${strength.cls}`}>{strength.label} password</div>
+            </div>
+          )}
+
+          {/* Row 2: Note | Save */}
+          <div className="form-row" style={{ marginTop: 12 }}>
+            <div className="form-field" style={{ flex: 1 }}>
+              <label>Note (optional)</label>
+              <input placeholder="e.g. Work account, 2FA enabled..."
                 value={form.note} onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))} />
             </div>
-            <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Encrypting…' : 'Save'}</button>
+            <button type="submit" className="btn-primary" style={{ alignSelf: 'flex-end' }} disabled={saving}>
+              {saving ? 'Encrypting…' : 'Save Password'}
+            </button>
           </div>
+
           {error && <div className="form-error">⚠ {error}</div>}
         </form>
       </div>
