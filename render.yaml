@@ -1,0 +1,34 @@
+services:
+  # ── Backend API ───────────────────────────────────────
+  - type: web
+    name: finance-hub-api
+    env: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false          # set manually in Render dashboard
+      - key: JWT_SECRET
+        sync: false
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false          # set to your frontend URL after deploy
+
+  # ── Frontend Static Site ──────────────────────────────
+  - type: web
+    name: finance-hub-app
+    env: static
+    rootDir: financial-app
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false          # set to your backend URL after deploy
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
