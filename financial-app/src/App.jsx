@@ -83,8 +83,8 @@ export default function App() {
     }
   }
   async function deleteFinancialEntry(id) {
-    await api.deleteFinancial(id);
     setFinancialEntries((prev) => prev.filter((e) => e._id !== id));
+    await api.deleteFinancial(id).catch(() => refreshAll().catch(() => {}));
   }
 
   // ── Expense CRUD ─────────────────────────────────────
@@ -98,8 +98,8 @@ export default function App() {
     }
   }
   async function deleteExpense(id) {
-    await api.deleteExpense(id);
     setExpenses((prev) => prev.filter((e) => e._id !== id));
+    await api.deleteExpense(id).catch(() => refreshAll().catch(() => {}));
   }
 
   // ── Password CRUD ────────────────────────────────────
@@ -113,8 +113,8 @@ export default function App() {
     }
   }
   async function deletePassword(id) {
-    await api.deletePassword(id);
     setPasswords((prev) => prev.filter((e) => e._id !== id));
+    await api.deletePassword(id).catch(() => refreshAll().catch(() => {}));
   }
 
   // ── Screens ──────────────────────────────────────────
