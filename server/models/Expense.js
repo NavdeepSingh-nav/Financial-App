@@ -9,6 +9,7 @@ const schema = new mongoose.Schema({
   category:  { type: String, enum: CATEGORIES, required: true },
   date:      { type: String, required: true },
   note:      { type: String, default: '' },
+  clientId:  { type: String, unique: true, sparse: true },
   createdAt: { type: Date, default: Date.now },
 });
 

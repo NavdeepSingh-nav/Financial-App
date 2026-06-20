@@ -28,6 +28,7 @@ function generatePassword(length = 16) {
 
 export default function PasswordManager({ passwords, onAdd, onDelete }) {
   const [form, setForm] = useState({ site: '', username: '', password: '', note: '' });
+  const [clientId, setClientId] = useState(() => crypto.randomUUID());
   const [showPwd, setShowPwd] = useState(false);
   const [visible, setVisible] = useState({});
   const [copied, setCopied] = useState(null);
@@ -51,8 +52,9 @@ export default function PasswordManager({ passwords, onAdd, onDelete }) {
     setError('');
     setSaving(true);
     try {
-      await onAdd({ site: form.site.trim(), username: form.username.trim(), password: form.password, note: form.note });
+      await onAdd({ site: form.site.trim(), username: form.username.trim(), password: form.password, note: form.note, clientId });
       setForm({ site: '', username: '', password: '', note: '' });
+      setClientId(crypto.randomUUID());
       setShowPwd(false);
     } catch (err) {
       setError(err.message);

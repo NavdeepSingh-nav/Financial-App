@@ -17,6 +17,7 @@ export default function ExpenseTracker({ expenses, onAdd, onDelete }) {
     title: '', amount: '', category: 'Food',
     date: new Date().toISOString().slice(0, 10), note: '',
   });
+  const [clientId, setClientId] = useState(() => crypto.randomUUID());
   const [filter, setFilter] = useState('All');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -40,8 +41,9 @@ export default function ExpenseTracker({ expenses, onAdd, onDelete }) {
     setError('');
     setSaving(true);
     try {
-      await onAdd({ title: form.title.trim(), amount: amt, category: form.category, date: form.date, note: form.note });
+      await onAdd({ title: form.title.trim(), amount: amt, category: form.category, date: form.date, note: form.note, clientId });
       setForm((f) => ({ ...f, title: '', amount: '', note: '' }));
+      setClientId(crypto.randomUUID());
     } catch (err) {
       setError(err.message);
     } finally {

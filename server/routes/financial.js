@@ -14,7 +14,7 @@ router.get('/', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const { description, amount, type, date } = req.body;
+    const { description, amount, type, date, clientId } = req.body;
     if (!description?.trim() || !amount || !type || !date) {
       return res.status(400).json({ message: 'description, amount, type and date are all required.' });
     }
@@ -22,9 +22,16 @@ router.post('/', async (req, res, next) => {
       userId: req.user.userId,
       description: description.trim(),
       amount, type, date,
+      ...(clientId ? { clientId } : {}),
     });
     res.status(201).json(entry);
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (err.code === 11000 && err.keyPattern?.clientId && req.body.clientId) {
+      const existing = await FinancialEntry.findOne({ clientId: req.body.clientId }).catch(() => null);
+      if (existing) return res.status(201).json(existing);
+    }
+    next(err);
+  }
 });
 
 router.delete('/:id', async (req, res, next) => {

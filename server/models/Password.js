@@ -7,6 +7,7 @@ const schema = new mongoose.Schema({
   usernameEncrypted: { type: String, required: true },
   passwordEncrypted: { type: String, required: true },
   noteEncrypted:     { type: String, default: '' },
+  clientId:          { type: String, unique: true, sparse: true },
   createdAt:         { type: Date, default: Date.now },
 });
 

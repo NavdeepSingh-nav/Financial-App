@@ -10,6 +10,7 @@ export default function FinancialTracker({ entries, onAdd, onDelete }) {
     type: 'Income',
     date: new Date().toISOString().slice(0, 10),
   });
+  const [clientId, setClientId] = useState(() => crypto.randomUUID());
   const [filter, setFilter] = useState('All');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -37,8 +38,9 @@ export default function FinancialTracker({ entries, onAdd, onDelete }) {
     setError('');
     setSaving(true);
     try {
-      await onAdd({ description: form.description.trim(), amount: amt, type: form.type, date: form.date });
+      await onAdd({ description: form.description.trim(), amount: amt, type: form.type, date: form.date, clientId });
       setForm((f) => ({ ...f, description: '', amount: '' }));
+      setClientId(crypto.randomUUID());
     } catch (err) {
       setError(err.message);
     } finally {

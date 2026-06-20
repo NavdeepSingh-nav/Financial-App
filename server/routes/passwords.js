@@ -26,7 +26,7 @@ router.get('/', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const { site, username, password, note } = req.body;
+    const { site, username, password, note, clientId } = req.body;
     if (!site?.trim() || !username?.trim() || !password?.trim()) {
       return res.status(400).json({ message: 'site, username and password are required.' });
     }
@@ -36,9 +36,16 @@ router.post('/', async (req, res, next) => {
       usernameEncrypted: encrypt(username),
       passwordEncrypted: encrypt(password),
       noteEncrypted: note ? encrypt(note) : '',
+      ...(clientId ? { clientId } : {}),
     });
     res.status(201).json(toClient(doc));
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (err.code === 11000 && err.keyPattern?.clientId && req.body.clientId) {
+      const existing = await Password.findOne({ clientId: req.body.clientId }).catch(() => null);
+      if (existing) return res.status(201).json(toClient(existing));
+    }
+    next(err);
+  }
 });
 
 router.delete('/:id', async (req, res, next) => {

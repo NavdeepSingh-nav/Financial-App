@@ -6,6 +6,7 @@ const schema = new mongoose.Schema({
   amount:      { type: Number, required: true, min: 0 },
   type:        { type: String, enum: ['Income', 'Expense', 'Savings', 'Investment'], required: true },
   date:        { type: String, required: true },
+  clientId:    { type: String, unique: true, sparse: true },
   createdAt:   { type: Date, default: Date.now },
 });
 

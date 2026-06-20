@@ -14,7 +14,7 @@ router.get('/', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const { title, amount, category, date, note } = req.body;
+    const { title, amount, category, date, note, clientId } = req.body;
     if (!title?.trim() || !amount || !category || !date) {
       return res.status(400).json({ message: 'title, amount, category and date are required.' });
     }
@@ -23,9 +23,16 @@ router.post('/', async (req, res, next) => {
       title: title.trim(),
       amount, category, date,
       note: note || '',
+      ...(clientId ? { clientId } : {}),
     });
     res.status(201).json(expense);
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (err.code === 11000 && err.keyPattern?.clientId && req.body.clientId) {
+      const existing = await Expense.findOne({ clientId: req.body.clientId }).catch(() => null);
+      if (existing) return res.status(201).json(existing);
+    }
+    next(err);
+  }
 });
 
 router.delete('/:id', async (req, res, next) => {

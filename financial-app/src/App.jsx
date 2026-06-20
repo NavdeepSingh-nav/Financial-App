@@ -94,7 +94,7 @@ export default function App() {
       setExpenses((prev) => [created, ...prev]);
     } catch {
       const ok = await refreshAll().catch(() => false);
-      if (!ok) throw new Error('Could not save entry. Please try again.');
+      if (!ok) throw new Error('Connection error — please refresh the page to check if the expense was saved before adding it again.');
     }
   }
   async function deleteExpense(id) {
@@ -109,7 +109,7 @@ export default function App() {
       setPasswords((prev) => [created, ...prev]);
     } catch {
       const ok = await refreshAll().catch(() => false);
-      if (!ok) throw new Error('Could not save entry. Please try again.');
+      if (!ok) throw new Error('Connection error — please refresh the page to check if the password was saved before adding it again.');
     }
   }
   async function deletePassword(id) {
