@@ -64,6 +64,37 @@
   line-height: 1.5;
 }
 
+.login-tabs {
+  display: flex;
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 3px;
+  margin-bottom: 22px;
+  gap: 3px;
+}
+
+.login-tab {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.login-tab.active {
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 600;
+}
+
 .login-form { width: 100%; }
 
 .login-field {

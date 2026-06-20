@@ -7,7 +7,7 @@ const NAV = [
   { id: 'password', label: 'Password Manager', icon: '⬡' },
 ];
 
-export default function Sidebar({ page, setPage, financialEntries, expenses, passwords, onLogout }) {
+export default function Sidebar({ page, setPage, financialEntries, expenses, passwords, userEmail, onLogout }) {
   const totalItems = financialEntries.length + expenses.length + passwords.length;
 
   return (
@@ -16,7 +16,7 @@ export default function Sidebar({ page, setPage, financialEntries, expenses, pas
         <div className="sidebar-brand-icon">💎</div>
         <div>
           <h2>Finance Hub</h2>
-          <span>Personal Dashboard</span>
+          <span>{userEmail || 'Personal Dashboard'}</span>
         </div>
       </div>
 

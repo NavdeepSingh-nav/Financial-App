@@ -10,7 +10,7 @@ import './App.css';
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem('fh_token'));
-  const [hasUser, setHasUser] = useState(null);   // null = still checking server
+  const [userEmail, setUserEmail] = useState(localStorage.getItem('fh_email') || '');
   const [page, setPage] = useState('dashboard');
 
   const [financialEntries, setFinancialEntries] = useState([]);
@@ -21,16 +21,9 @@ export default function App() {
 
   // Token expiry signal from api.js
   useEffect(() => {
-    const handler = () => setToken(null);
+    const handler = () => { setToken(null); setUserEmail(''); };
     window.addEventListener('auth:expired', handler);
     return () => window.removeEventListener('auth:expired', handler);
-  }, []);
-
-  // Check if a master account exists
-  useEffect(() => {
-    api.status()
-      .then(({ hasUser }) => setHasUser(hasUser))
-      .catch(() => setServerError(true));
   }, []);
 
   // Fetch all data once authenticated
@@ -50,14 +43,17 @@ export default function App() {
       .finally(() => setDataLoading(false));
   }, [token]);
 
-  function handleLogin(newToken) {
+  function handleLogin(newToken, email) {
+    localStorage.setItem('fh_email', email || '');
     setToken(newToken);
-    setHasUser(true);
+    setUserEmail(email || '');
   }
 
   function handleLogout() {
     localStorage.removeItem('fh_token');
+    localStorage.removeItem('fh_email');
     setToken(null);
+    setUserEmail('');
     setFinancialEntries([]);
     setExpenses([]);
     setPasswords([]);
@@ -110,17 +106,8 @@ export default function App() {
     );
   }
 
-  if (hasUser === null) {
-    return (
-      <div className="app-loading">
-        <div className="loading-spinner" />
-        <p>Connecting to server…</p>
-      </div>
-    );
-  }
-
   if (!token) {
-    return <Login hasUser={hasUser} onLogin={handleLogin} />;
+    return <Login onLogin={handleLogin} />;
   }
 
   if (dataLoading) {
@@ -140,6 +127,7 @@ export default function App() {
         financialEntries={financialEntries}
         expenses={expenses}
         passwords={passwords}
+        userEmail={userEmail}
         onLogout={handleLogout}
       />
       <main className="app-content">

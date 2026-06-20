@@ -1,25 +1,38 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
 
-export default function Login({ hasUser, onLogin }) {
+export default function Login({ onLogin }) {
+  const [mode, setMode] = useState('login'); // 'login' | 'register'
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  function switchMode(m) {
+    setMode(m);
+    setError('');
+    setPassword('');
+    setConfirm('');
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
 
+    if (!email.trim()) return setError('Email is required.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setError('Enter a valid email address.');
     if (password.length < 8) return setError('Password must be at least 8 characters.');
-    if (!hasUser && password !== confirm) return setError('Passwords do not match.');
+    if (mode === 'register' && password !== confirm) return setError('Passwords do not match.');
 
     setLoading(true);
     try {
-      const { token } = hasUser ? await api.login(password) : await api.setup(password);
-      localStorage.setItem('fh_token', token);
-      onLogin(token);
+      const res = mode === 'register'
+        ? await api.register(email, password)
+        : await api.login(email, password);
+      localStorage.setItem('fh_token', res.token);
+      onLogin(res.token, res.email);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -33,22 +46,51 @@ export default function Login({ hasUser, onLogin }) {
         <div className="login-icon">💎</div>
         <h1 className="login-title">Finance Hub</h1>
         <p className="login-sub">
-          {hasUser
-            ? 'Enter your master password to unlock your data'
-            : 'Create a master password to protect your data'}
+          {mode === 'login'
+            ? 'Sign in to access your personal finance dashboard'
+            : 'Create an account to get started'}
         </p>
+
+        {/* Mode toggle */}
+        <div className="login-tabs">
+          <button
+            type="button"
+            className={`login-tab ${mode === 'login' ? 'active' : ''}`}
+            onClick={() => switchMode('login')}
+          >
+            Sign In
+          </button>
+          <button
+            type="button"
+            className={`login-tab ${mode === 'register' ? 'active' : ''}`}
+            onClick={() => switchMode('register')}
+          >
+            Register
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="login-field">
-            <label>Master Password</label>
+            <label>Email Address</label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoFocus
+              autoComplete="email"
+            />
+          </div>
+
+          <div className="login-field">
+            <label>Password</label>
             <div className="login-input-row">
               <input
                 type={showPwd ? 'text' : 'password'}
-                placeholder="Enter master password"
+                placeholder={mode === 'register' ? 'Min. 8 characters' : 'Enter your password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                autoFocus
-                autoComplete={hasUser ? 'current-password' : 'new-password'}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               />
               <button type="button" className="btn-show" onClick={() => setShowPwd((v) => !v)}>
                 {showPwd ? 'Hide' : 'Show'}
@@ -56,12 +98,12 @@ export default function Login({ hasUser, onLogin }) {
             </div>
           </div>
 
-          {!hasUser && (
+          {mode === 'register' && (
             <div className="login-field">
               <label>Confirm Password</label>
               <input
                 type={showPwd ? 'text' : 'password'}
-                placeholder="Repeat master password"
+                placeholder="Repeat your password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 autoComplete="new-password"
@@ -72,7 +114,9 @@ export default function Login({ hasUser, onLogin }) {
           {error && <div className="login-error">⚠ {error}</div>}
 
           <button type="submit" className="login-btn" disabled={loading}>
-            {loading ? 'Please wait…' : hasUser ? '→ Unlock' : '→ Create Account'}
+            {loading
+              ? 'Please wait…'
+              : mode === 'login' ? '→ Sign In' : '→ Create Account'}
           </button>
         </form>
 
@@ -82,7 +126,7 @@ export default function Login({ hasUser, onLogin }) {
           <span className="login-badge">🍃 MongoDB</span>
         </div>
         <p className="login-note">
-          Passwords are encrypted before reaching the database — the server never stores plaintext.
+          Your passwords are encrypted before reaching the database.
         </p>
       </div>
     </div>

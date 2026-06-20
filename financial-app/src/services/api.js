@@ -26,10 +26,9 @@ async function req(method, path, body) {
 
 export const api = {
   // Auth
-  status:    ()   => req('GET',  '/auth/status'),
-  setup:     (pw) => req('POST', '/auth/setup', { password: pw }),
-  login:     (pw) => req('POST', '/auth/login', { password: pw }),
-  me:        ()   => req('GET',  '/auth/me'),
+  register:  (email, pw) => req('POST', '/auth/register', { email, password: pw }),
+  login:     (email, pw) => req('POST', '/auth/login',    { email, password: pw }),
+  me:        ()          => req('GET',  '/auth/me'),
 
   // Financial
   getFinancial:    ()     => req('GET',    '/financial'),
