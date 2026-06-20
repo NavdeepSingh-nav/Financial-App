@@ -21,8 +21,10 @@ function issueToken(user) {
 }
 
 router.post('/register', async (req, res, next) => {
+  const { email, password } = req.body ?? {};
+  let createAttempted = false;
+
   try {
-    const { email, password } = req.body ?? {};
     if (!email?.trim()) return res.status(400).json({ message: 'Email is required.' });
     if (!password || password.length < 8)
       return res.status(400).json({ message: 'Password must be at least 8 characters.' });
@@ -31,20 +33,30 @@ router.post('/register', async (req, res, next) => {
     if (existing) return res.status(409).json({ message: 'An account with this email already exists.' });
 
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    createAttempted = true;
     const user = await User.create({ email: email.toLowerCase().trim(), passwordHash });
     const token = issueToken(user);
     res.status(201).json({ token, email: user.email });
   } catch (err) {
-    console.error('[register error]', err);
+    console.error('[register error]', err.name, err.code, err.message);
 
-    if (err.message && err.message.includes('JWT_SECRET')) {
+    if (err.message?.includes('JWT_SECRET')) {
       return res.status(500).json({ message: 'Server configuration error: missing JWT secret.' });
     }
 
     if (err.code === 11000) {
       return res.status(409).json({ message: 'An account with this email already exists.' });
     }
+
     if (err.name?.startsWith('Mongo')) {
+      // Atlas may have written the document even if the driver threw a network error.
+      // If the row is there, return a token rather than leaving the user stranded.
+      if (createAttempted) {
+        try {
+          const saved = await User.findOne({ email: email.toLowerCase().trim() });
+          if (saved) return res.status(201).json({ token: issueToken(saved), email: saved.email });
+        } catch (_) {}
+      }
       return res.status(503).json({ message: 'Server is starting up — please try again in a few seconds.' });
     }
 
