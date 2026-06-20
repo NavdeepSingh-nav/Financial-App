@@ -106,20 +106,18 @@ export default function PasswordManager({ passwords, onAdd, onDelete }) {
                   ⚡ Generate
                 </button>
               </div>
+              {form.password && (
+                <>
+                  <div className="pw-strength">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className={`pw-strength-bar ${i <= strength.score ? `filled ${strength.cls}` : ''}`} />
+                    ))}
+                  </div>
+                  <div className={`pw-strength-label ${strength.cls}`}>{strength.label} password</div>
+                </>
+              )}
             </div>
           </div>
-
-          {/* Strength meter — sits between rows, doesn't break alignment */}
-          {form.password && (
-            <div style={{ marginTop: 6, marginBottom: 2 }}>
-              <div className="pw-strength">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className={`pw-strength-bar ${i <= strength.score ? `filled ${strength.cls}` : ''}`} />
-                ))}
-              </div>
-              <div className={`pw-strength-label ${strength.cls}`}>{strength.label} password</div>
-            </div>
-          )}
 
           {/* Row 2: Note | Save */}
           <div className="form-row" style={{ marginTop: 12 }}>
