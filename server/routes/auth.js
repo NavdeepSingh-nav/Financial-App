@@ -28,7 +28,10 @@ router.post('/register', async (req, res, next) => {
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
     const user = await User.create({ email: email.toLowerCase().trim(), passwordHash });
     res.status(201).json({ token: issueToken(user), email: user.email });
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (err.code === 11000) return res.status(409).json({ message: 'An account with this email already exists.' });
+    next(err);
+  }
 });
 
 router.post('/login', async (req, res, next) => {

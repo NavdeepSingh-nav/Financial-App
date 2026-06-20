@@ -78,7 +78,7 @@ export default function PasswordManager({ passwords, onAdd, onDelete }) {
       <div className="form-card">
         <h3>Save New Password</h3>
         <form onSubmit={handleSubmit}>
-          {/* Row 1: Site | Username | Password */}
+          {/* Row 1: Site | Username */}
           <div className="form-row">
             <div className="form-field">
               <label>Site / App</label>
@@ -90,7 +90,11 @@ export default function PasswordManager({ passwords, onAdd, onDelete }) {
               <input placeholder="you@example.com"
                 value={form.username} onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))} />
             </div>
-            <div className="form-field" style={{ flex: 2 }}>
+          </div>
+
+          {/* Row 2: Password (full width) */}
+          <div className="form-row" style={{ marginTop: 10 }}>
+            <div className="form-field">
               <label>Password</label>
               <div className="pw-input-group">
                 <input
@@ -119,8 +123,8 @@ export default function PasswordManager({ passwords, onAdd, onDelete }) {
             </div>
           </div>
 
-          {/* Row 2: Note | Save */}
-          <div className="form-row" style={{ marginTop: 12 }}>
+          {/* Row 3: Note | Save */}
+          <div className="form-row" style={{ marginTop: 10 }}>
             <div className="form-field" style={{ flex: 1 }}>
               <label>Note (optional)</label>
               <input placeholder="e.g. Work account, 2FA enabled..."

@@ -7,6 +7,7 @@ export default function Login({ onLogin }) {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPwd, setShowPwd] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -15,6 +16,8 @@ export default function Login({ onLogin }) {
     setError('');
     setPassword('');
     setConfirm('');
+    setShowPwd(false);
+    setShowConfirm(false);
   }
 
   async function handleSubmit(e) {
@@ -101,13 +104,18 @@ export default function Login({ onLogin }) {
           {mode === 'register' && (
             <div className="login-field">
               <label>Confirm Password</label>
-              <input
-                type={showPwd ? 'text' : 'password'}
-                placeholder="Repeat your password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                autoComplete="new-password"
-              />
+              <div className="login-input-row">
+                <input
+                  type={showConfirm ? 'text' : 'password'}
+                  placeholder="Repeat your password"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  autoComplete="new-password"
+                />
+                <button type="button" className="btn-show" onClick={() => setShowConfirm((v) => !v)}>
+                  {showConfirm ? 'Hide' : 'Show'}
+                </button>
+              </div>
             </div>
           )}
 
