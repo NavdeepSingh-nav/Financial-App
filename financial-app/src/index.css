@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #070a12;
+  --surface: #0e1420;
+  --surface-2: #141c2e;
+  --surface-3: #1a2438;
+  --border: #1e2a40;
+  --border-subtle: #162032;
+
+  --primary: #6366f1;
+  --primary-hover: #5254d4;
+  --primary-ghost: rgba(99, 102, 241, 0.12);
+
+  --green: #10b981;
+  --green-ghost: rgba(16, 185, 129, 0.12);
+  --red: #ef4444;
+  --red-ghost: rgba(239, 68, 68, 0.12);
+  --blue: #3b82f6;
+  --blue-ghost: rgba(59, 130, 246, 0.12);
+  --violet: #8b5cf6;
+  --violet-ghost: rgba(139, 92, 246, 0.12);
+  --amber: #f59e0b;
+  --amber-ghost: rgba(245, 158, 11, 0.12);
+  --cyan: #06b6d4;
+  --pink: #ec4899;
+  --orange: #f97316;
+
+  --text: #f0f6fc;
+  --text-muted: #8b96a8;
+  --text-dim: #3d4f66;
+
+  --sidebar-w: 230px;
+  --r: 12px;
+  --r-sm: 8px;
+  --r-xs: 6px;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+input[type='date']::-webkit-calendar-picker-indicator {
+  filter: invert(0.5);
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--surface-3); }
