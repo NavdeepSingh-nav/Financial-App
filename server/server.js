@@ -47,11 +47,14 @@ app.use('/api/docs', swaggerDocs.serve, swaggerDocs.setup);
 app.use((err, _req, res, _next) => {
   console.error('[server error]', err.name, err.message);
 
-  // MongoDB not yet connected (Render free-tier cold start)
+  // MongoDB not yet connected / command buffer timed out (Render free-tier cold start).
+  // MongooseError is the base class Mongoose uses for buffering timeouts;
+  // the driver-level errors come in as MongoServerSelectionError / MongoNetworkError.
   if (
     err.name === 'MongoServerSelectionError' ||
     err.name === 'MongoNetworkError' ||
-    err.name === 'MongooseServerSelectionError'
+    err.name === 'MongooseServerSelectionError' ||
+    err.name === 'MongooseError'
   ) {
     return res.status(503).json({
       message: 'Server is starting up — please try again in a few seconds.',
