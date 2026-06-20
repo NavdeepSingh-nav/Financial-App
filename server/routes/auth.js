@@ -17,7 +17,7 @@ function issueToken(user) {
 
 router.post('/register', async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body ?? {};
     if (!email?.trim()) return res.status(400).json({ message: 'Email is required.' });
     if (!password || password.length < 8)
       return res.status(400).json({ message: 'Password must be at least 8 characters.' });
@@ -27,8 +27,10 @@ router.post('/register', async (req, res, next) => {
 
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
     const user = await User.create({ email: email.toLowerCase().trim(), passwordHash });
-    res.status(201).json({ token: issueToken(user), email: user.email });
+    const token = issueToken(user);
+    res.status(201).json({ token, email: user.email });
   } catch (err) {
+    console.error('[register error]', err.name, err.code, err.message);
     if (err.code === 11000) return res.status(409).json({ message: 'An account with this email already exists.' });
     next(err);
   }
@@ -36,7 +38,7 @@ router.post('/register', async (req, res, next) => {
 
 router.post('/login', async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body ?? {};
     if (!email?.trim() || !password)
       return res.status(400).json({ message: 'Email and password are required.' });
 
@@ -47,7 +49,10 @@ router.post('/login', async (req, res, next) => {
     if (!ok) return res.status(401).json({ message: 'Incorrect password.' });
 
     res.json({ token: issueToken(user), email: user.email });
-  } catch (err) { next(err); }
+  } catch (err) {
+    console.error('[login error]', err.name, err.code, err.message);
+    next(err);
+  }
 });
 
 router.get('/me', requireAuth, (req, res) => {
