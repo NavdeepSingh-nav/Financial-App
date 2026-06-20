@@ -16,6 +16,7 @@ if (process.env.ENCRYPTION_KEY.length !== 64) {
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const swaggerDocs = require('./docs/swagger');
 
 const app = express();
 
@@ -40,10 +41,23 @@ app.use('/api/expenses',  require('./routes/expenses'));
 app.use('/api/passwords', require('./routes/passwords'));
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
+app.use('/api/docs', swaggerDocs.serve, swaggerDocs.setup);
 
 // Global error handler
 app.use((err, _req, res, _next) => {
-  console.error('[server error]', err.message);
+  console.error('[server error]', err.name, err.message);
+
+  // MongoDB not yet connected (Render free-tier cold start)
+  if (
+    err.name === 'MongoServerSelectionError' ||
+    err.name === 'MongoNetworkError' ||
+    err.name === 'MongooseServerSelectionError'
+  ) {
+    return res.status(503).json({
+      message: 'Server is starting up — please try again in a few seconds.',
+    });
+  }
+
   res.status(500).json({ message: 'Internal server error' });
 });
 

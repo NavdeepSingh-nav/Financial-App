@@ -8,7 +8,7 @@ function token() {
   return localStorage.getItem('fh_token');
 }
 
-async function req(method, path, body) {
+async function req(method, path, body, { _retry } = {}) {
   let res;
   try {
     res = await fetch(`${BASE}${path}`, {
@@ -26,6 +26,12 @@ async function req(method, path, body) {
   if (res.status === 401) {
     localStorage.removeItem('fh_token');
     window.dispatchEvent(new Event('auth:expired'));
+  }
+
+  // Server warming up (Render free-tier cold start) — retry once after a short wait
+  if (res.status === 503 && !_retry) {
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    return req(method, path, body, { _retry: true });
   }
 
   // Guard against non-JSON responses (e.g. Render's 502/504 HTML pages)
