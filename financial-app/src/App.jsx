@@ -65,16 +65,21 @@ export default function App() {
     setFinancialEntries(fin);
     setExpenses(exp);
     setPasswords(pwd);
+    return true;
   }
 
   // ── Financial CRUD ───────────────────────────────────
+  // If a POST succeeds the returned doc updates state immediately.
+  // If the POST fails but the write reached MongoDB (common on Render free tier
+  // when bcrypt or a cold DB round-trip pushes past the proxy timeout),
+  // refreshAll re-syncs the UI silently — no error shown to the user.
   async function addFinancialEntry(data) {
     try {
       const created = await api.addFinancial(data);
       setFinancialEntries((prev) => [created, ...prev]);
-    } catch (err) {
-      await refreshAll().catch(() => {});
-      throw err;
+    } catch {
+      const ok = await refreshAll().catch(() => false);
+      if (!ok) throw new Error('Could not save entry. Please try again.');
     }
   }
   async function deleteFinancialEntry(id) {
@@ -87,9 +92,9 @@ export default function App() {
     try {
       const created = await api.addExpense(data);
       setExpenses((prev) => [created, ...prev]);
-    } catch (err) {
-      await refreshAll().catch(() => {});
-      throw err;
+    } catch {
+      const ok = await refreshAll().catch(() => false);
+      if (!ok) throw new Error('Could not save entry. Please try again.');
     }
   }
   async function deleteExpense(id) {
@@ -102,9 +107,9 @@ export default function App() {
     try {
       const created = await api.addPassword(data);
       setPasswords((prev) => [created, ...prev]);
-    } catch (err) {
-      await refreshAll().catch(() => {});
-      throw err;
+    } catch {
+      const ok = await refreshAll().catch(() => false);
+      if (!ok) throw new Error('Could not save entry. Please try again.');
     }
   }
   async function deletePassword(id) {

@@ -5,7 +5,7 @@ const User = require('../models/User');
 const requireAuth = require('../middleware/auth');
 
 const router = express.Router();
-const BCRYPT_ROUNDS = 12;
+const BCRYPT_ROUNDS = 10; // 12 times out on Render free tier (~8s); 10 is still secure (~1s)
 
 function issueToken(user) {
   return jwt.sign(
