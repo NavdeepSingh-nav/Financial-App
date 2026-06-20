@@ -7,17 +7,18 @@ const NAV = [
   { id: 'password', label: 'Password Manager', icon: '⬡' },
 ];
 
-export default function Sidebar({ page, setPage, financialEntries, expenses, passwords, userEmail, onLogout }) {
+export default function Sidebar({ page, setPage, financialEntries, expenses, passwords, userEmail, onLogout, drawerOpen, onDrawerClose }) {
   const totalItems = financialEntries.length + expenses.length + passwords.length;
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar${drawerOpen ? ' sidebar--open' : ''}`}>
       <div className="sidebar-brand">
         <div className="sidebar-brand-icon">💎</div>
-        <div>
+        <div style={{ flex: 1 }}>
           <h2>Finance Hub</h2>
           <span>{userEmail || 'Personal Dashboard'}</span>
         </div>
+        <button className="drawer-close-btn" onClick={onDrawerClose} aria-label="Close menu">✕</button>
       </div>
 
       <nav className="sidebar-nav">

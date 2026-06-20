@@ -12,6 +12,7 @@ export default function App() {
   const [token, setToken] = useState(localStorage.getItem('fh_token'));
   const [userEmail, setUserEmail] = useState(localStorage.getItem('fh_email') || '');
   const [page, setPage] = useState('dashboard');
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const [financialEntries, setFinancialEntries] = useState([]);
   const [expenses, setExpenses] = useState([]);
@@ -150,14 +151,20 @@ export default function App() {
     <div className="app-layout">
       <Sidebar
         page={page}
-        setPage={setPage}
+        setPage={(p) => { setPage(p); setDrawerOpen(false); }}
         financialEntries={financialEntries}
         expenses={expenses}
         passwords={passwords}
         userEmail={userEmail}
         onLogout={handleLogout}
+        drawerOpen={drawerOpen}
+        onDrawerClose={() => setDrawerOpen(false)}
       />
+      {drawerOpen && <div className="drawer-overlay" onClick={() => setDrawerOpen(false)} />}
       <main className="app-content">
+        <button className="mobile-menu-btn" onClick={() => setDrawerOpen(true)} aria-label="Open menu">
+          <span /><span /><span />
+        </button>
         {page === 'dashboard' && (
           <Dashboard
             financialEntries={financialEntries}
