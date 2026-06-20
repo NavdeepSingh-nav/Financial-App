@@ -31,8 +31,20 @@ router.post('/register', async (req, res, next) => {
     res.status(201).json({ token, email: user.email });
   } catch (err) {
     console.error('[register error]', err.name, err.code, err.message);
-    if (err.code === 11000) return res.status(409).json({ message: 'An account with this email already exists.' });
-    next(err);
+
+    if (err.code === 11000) {
+      return res.status(409).json({ message: 'An account with this email already exists.' });
+    }
+    if (
+      err.name === 'MongoServerSelectionError' ||
+      err.name === 'MongoNetworkError' ||
+      err.name === 'MongooseServerSelectionError' ||
+      err.name === 'MongooseError'
+    ) {
+      return res.status(503).json({ message: 'Server is starting up — please try again in a few seconds.' });
+    }
+
+    return res.status(500).json({ message: 'Registration failed. Please try again.' });
   }
 });
 
@@ -51,7 +63,17 @@ router.post('/login', async (req, res, next) => {
     res.json({ token: issueToken(user), email: user.email });
   } catch (err) {
     console.error('[login error]', err.name, err.code, err.message);
-    next(err);
+
+    if (
+      err.name === 'MongoServerSelectionError' ||
+      err.name === 'MongoNetworkError' ||
+      err.name === 'MongooseServerSelectionError' ||
+      err.name === 'MongooseError'
+    ) {
+      return res.status(503).json({ message: 'Server is starting up — please try again in a few seconds.' });
+    }
+
+    return res.status(500).json({ message: 'Login failed. Please try again.' });
   }
 });
 
