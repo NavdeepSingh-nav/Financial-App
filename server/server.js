@@ -1,4 +1,18 @@
 require('dotenv').config();
+
+// Validate required env vars before anything else
+const REQUIRED = ['MONGO_URI', 'JWT_SECRET', 'ENCRYPTION_KEY'];
+const missing = REQUIRED.filter((k) => !process.env[k]);
+if (missing.length) {
+  console.error(`Missing required environment variables: ${missing.join(', ')}`);
+  console.error('Set them in .env (local) or the Render dashboard (production).');
+  process.exit(1);
+}
+if (process.env.ENCRYPTION_KEY.length !== 64) {
+  console.error('ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes).');
+  process.exit(1);
+}
+
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
@@ -13,7 +27,8 @@ const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN || 'http://localhost:5173')
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-    cb(new Error('Not allowed by CORS'));
+    // Return 403 instead of letting the error bubble to the 500 handler
+    cb(null, false);
   },
   credentials: true,
 }));
@@ -26,17 +41,18 @@ app.use('/api/passwords', require('./routes/passwords'));
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
-// Global error handler — prevents stack traces leaking to client
+// Global error handler
 app.use((err, _req, res, _next) => {
-  console.error(err);
+  console.error('[server error]', err.message);
   res.status(500).json({ message: 'Internal server error' });
 });
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Allowed origins: ${ALLOWED_ORIGINS.join(', ')}`);
 
-  // Keep Render free-tier service alive (pings self every 14 min to prevent sleep)
+  // Keep Render free-tier alive — ping self every 14 min
   if (process.env.RENDER_EXTERNAL_URL) {
     setInterval(() => {
       fetch(`${process.env.RENDER_EXTERNAL_URL}/api/health`).catch(() => {});
