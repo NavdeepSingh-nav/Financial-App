@@ -8,6 +8,11 @@ const router = express.Router();
 const BCRYPT_ROUNDS = 10; // 12 times out on Render free tier (~8s); 10 is still secure (~1s)
 
 function issueToken(user) {
+  if (!process.env.JWT_SECRET) {
+    console.error('Missing JWT_SECRET environment variable');
+    throw new Error('Server misconfiguration: JWT_SECRET not set');
+  }
+
   return jwt.sign(
     { userId: user._id.toString(), email: user.email },
     process.env.JWT_SECRET,
@@ -30,7 +35,11 @@ router.post('/register', async (req, res, next) => {
     const token = issueToken(user);
     res.status(201).json({ token, email: user.email });
   } catch (err) {
-    console.error('[register error]', err.name, err.code, err.message);
+    console.error('[register error]', err);
+
+    if (err.message && err.message.includes('JWT_SECRET')) {
+      return res.status(500).json({ message: 'Server configuration error: missing JWT secret.' });
+    }
 
     if (err.code === 11000) {
       return res.status(409).json({ message: 'An account with this email already exists.' });
@@ -62,7 +71,11 @@ router.post('/login', async (req, res, next) => {
 
     res.json({ token: issueToken(user), email: user.email });
   } catch (err) {
-    console.error('[login error]', err.name, err.code, err.message);
+    console.error('[login error]', err);
+
+    if (err.message && err.message.includes('JWT_SECRET')) {
+      return res.status(500).json({ message: 'Server configuration error: missing JWT secret.' });
+    }
 
     if (
       err.name === 'MongoServerSelectionError' ||
