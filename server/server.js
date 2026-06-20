@@ -20,15 +20,12 @@ const swaggerDocs = require('./docs/swagger');
 
 const app = express();
 
-connectDB();
-
 const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN || 'http://localhost:5173')
   .split(',').map(s => s.trim());
 
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-    // Return 403 instead of letting the error bubble to the 500 handler
     cb(null, false);
   },
   credentials: true,
@@ -47,15 +44,7 @@ app.use('/api/docs', swaggerDocs.serve, swaggerDocs.setup);
 app.use((err, _req, res, _next) => {
   console.error('[server error]', err.name, err.message);
 
-  // MongoDB not yet connected / command buffer timed out (Render free-tier cold start).
-  // MongooseError is the base class Mongoose uses for buffering timeouts;
-  // the driver-level errors come in as MongoServerSelectionError / MongoNetworkError.
-  if (
-    err.name === 'MongoServerSelectionError' ||
-    err.name === 'MongoNetworkError' ||
-    err.name === 'MongooseServerSelectionError' ||
-    err.name === 'MongooseError'
-  ) {
+  if (err.name?.startsWith('Mongo')) {
     return res.status(503).json({
       message: 'Server is starting up — please try again in a few seconds.',
     });
@@ -65,14 +54,20 @@ app.use((err, _req, res, _next) => {
 });
 
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Allowed origins: ${ALLOWED_ORIGINS.join(', ')}`);
 
-  // Keep Render free-tier alive — ping self every 14 min
-  if (process.env.RENDER_EXTERNAL_URL) {
-    setInterval(() => {
-      fetch(`${process.env.RENDER_EXTERNAL_URL}/api/health`).catch(() => {});
-    }, 14 * 60 * 1000);
-  }
-});
+async function start() {
+  await connectDB();
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Allowed origins: ${ALLOWED_ORIGINS.join(', ')}`);
+
+    // Keep Render free-tier alive — ping self every 14 min
+    if (process.env.RENDER_EXTERNAL_URL) {
+      setInterval(() => {
+        fetch(`${process.env.RENDER_EXTERNAL_URL}/api/health`).catch(() => {});
+      }, 14 * 60 * 1000);
+    }
+  });
+}
+
+start();

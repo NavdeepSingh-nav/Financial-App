@@ -44,12 +44,7 @@ router.post('/register', async (req, res, next) => {
     if (err.code === 11000) {
       return res.status(409).json({ message: 'An account with this email already exists.' });
     }
-    if (
-      err.name === 'MongoServerSelectionError' ||
-      err.name === 'MongoNetworkError' ||
-      err.name === 'MongooseServerSelectionError' ||
-      err.name === 'MongooseError'
-    ) {
+    if (err.name?.startsWith('Mongo')) {
       return res.status(503).json({ message: 'Server is starting up — please try again in a few seconds.' });
     }
 
@@ -77,12 +72,7 @@ router.post('/login', async (req, res, next) => {
       return res.status(500).json({ message: 'Server configuration error: missing JWT secret.' });
     }
 
-    if (
-      err.name === 'MongoServerSelectionError' ||
-      err.name === 'MongoNetworkError' ||
-      err.name === 'MongooseServerSelectionError' ||
-      err.name === 'MongooseError'
-    ) {
+    if (err.name?.startsWith('Mongo')) {
       return res.status(503).json({ message: 'Server is starting up — please try again in a few seconds.' });
     }
 
