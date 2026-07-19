@@ -17,6 +17,9 @@ export default function App() {
   const [financialEntries, setFinancialEntries] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [passwords, setPasswords] = useState([]);
+  const [budgets, setBudgets] = useState([]);
+  const [recurringTemplates, setRecurringTemplates] = useState([]);
+  const [goals, setGoals] = useState([]);
   const [dataLoading, setDataLoading] = useState(false);
   const [serverError, setServerError] = useState(false);
 
@@ -31,11 +34,14 @@ export default function App() {
   useEffect(() => {
     if (!token) return;
     setDataLoading(true);
-    Promise.all([api.getFinancial(), api.getExpenses(), api.getPasswords()])
-      .then(([fin, exp, pwd]) => {
+    Promise.all([api.getFinancial(), api.getExpenses(), api.getPasswords(), api.getBudgets(), api.getRecurring(), api.getGoals()])
+      .then(([fin, exp, pwd, budg, rec, gl]) => {
         setFinancialEntries(fin);
         setExpenses(exp);
         setPasswords(pwd);
+        setBudgets(budg);
+        setRecurringTemplates(rec);
+        setGoals(gl);
       })
       .catch(() => {
         localStorage.removeItem('fh_token');
@@ -58,14 +64,20 @@ export default function App() {
     setFinancialEntries([]);
     setExpenses([]);
     setPasswords([]);
+    setBudgets([]);
+    setRecurringTemplates([]);
+    setGoals([]);
     setPage('dashboard');
   }
 
   async function refreshAll() {
-    const [fin, exp, pwd] = await Promise.all([api.getFinancial(), api.getExpenses(), api.getPasswords()]);
+    const [fin, exp, pwd, budg, rec, gl] = await Promise.all([api.getFinancial(), api.getExpenses(), api.getPasswords(), api.getBudgets(), api.getRecurring(), api.getGoals()]);
     setFinancialEntries(fin);
     setExpenses(exp);
     setPasswords(pwd);
+    setBudgets(budg);
+    setRecurringTemplates(rec);
+    setGoals(gl);
     return true;
   }
 
@@ -83,6 +95,10 @@ export default function App() {
       if (!ok) throw new Error('Could not save entry. Please try again.');
     }
   }
+  async function updateFinancialEntry(id, data) {
+    const updated = await api.updateFinancial(id, data);
+    setFinancialEntries((prev) => prev.map((e) => (e._id === id ? updated : e)));
+  }
   async function deleteFinancialEntry(id) {
     setFinancialEntries((prev) => prev.filter((e) => e._id !== id));
     await api.deleteFinancial(id).catch(() => refreshAll().catch(() => {}));
@@ -97,6 +113,10 @@ export default function App() {
       const ok = await refreshAll().catch(() => false);
       if (!ok) throw new Error('Connection error — please refresh the page to check if the expense was saved before adding it again.');
     }
+  }
+  async function updateExpense(id, data) {
+    const updated = await api.updateExpense(id, data);
+    setExpenses((prev) => prev.map((e) => (e._id === id ? updated : e)));
   }
   async function deleteExpense(id) {
     setExpenses((prev) => prev.filter((e) => e._id !== id));
@@ -116,6 +136,43 @@ export default function App() {
   async function deletePassword(id) {
     setPasswords((prev) => prev.filter((e) => e._id !== id));
     await api.deletePassword(id).catch(() => refreshAll().catch(() => {}));
+  }
+
+  // ── Budget CRUD ──────────────────────────────────────
+  async function saveBudget(category, limit) {
+    const updated = await api.setBudget(category, limit);
+    setBudgets((prev) => [...prev.filter((b) => b.category !== category), updated]);
+  }
+  async function deleteBudget(category) {
+    setBudgets((prev) => prev.filter((b) => b.category !== category));
+    await api.deleteBudget(category).catch(() => refreshAll().catch(() => {}));
+  }
+
+  // ── Recurring entry CRUD ─────────────────────────────
+  async function addRecurringTemplate(data) {
+    const created = await api.addRecurring(data);
+    setRecurringTemplates((prev) => [created, ...prev]);
+    // GET /financial materializes this month's entry for any due template — pull it in now.
+    const fin = await api.getFinancial().catch(() => null);
+    if (fin) setFinancialEntries(fin);
+  }
+  async function deleteRecurringTemplate(id) {
+    setRecurringTemplates((prev) => prev.filter((t) => t._id !== id));
+    await api.deleteRecurring(id).catch(() => refreshAll().catch(() => {}));
+  }
+
+  // ── Savings goal CRUD ────────────────────────────────
+  async function addGoal(data) {
+    const created = await api.addGoal(data);
+    setGoals((prev) => [created, ...prev]);
+  }
+  async function contributeGoal(id, amount) {
+    const updated = await api.contributeGoal(id, amount);
+    setGoals((prev) => prev.map((g) => (g._id === id ? updated : g)));
+  }
+  async function deleteGoal(id) {
+    setGoals((prev) => prev.filter((g) => g._id !== id));
+    await api.deleteGoal(id).catch(() => refreshAll().catch(() => {}));
   }
 
   // ── Screens ──────────────────────────────────────────
@@ -170,6 +227,7 @@ export default function App() {
             financialEntries={financialEntries}
             expenses={expenses}
             passwords={passwords}
+            budgets={budgets}
             setPage={setPage}
           />
         )}
@@ -177,14 +235,26 @@ export default function App() {
           <FinancialTracker
             entries={financialEntries}
             onAdd={addFinancialEntry}
+            onUpdate={updateFinancialEntry}
             onDelete={deleteFinancialEntry}
+            recurringTemplates={recurringTemplates}
+            onAddRecurring={addRecurringTemplate}
+            onDeleteRecurring={deleteRecurringTemplate}
+            goals={goals}
+            onAddGoal={addGoal}
+            onContributeGoal={contributeGoal}
+            onDeleteGoal={deleteGoal}
           />
         )}
         {page === 'expense' && (
           <ExpenseTracker
             expenses={expenses}
             onAdd={addExpense}
+            onUpdate={updateExpense}
             onDelete={deleteExpense}
+            budgets={budgets}
+            onSaveBudget={saveBudget}
+            onDeleteBudget={deleteBudget}
           />
         )}
         {page === 'password' && (

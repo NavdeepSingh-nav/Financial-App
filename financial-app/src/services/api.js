@@ -55,15 +55,33 @@ export const api = {
   // Financial
   getFinancial:    ()     => req('GET',    '/financial'),
   addFinancial:    (data) => req('POST',   '/financial', data),
+  updateFinancial: (id, data) => req('PUT', `/financial/${id}`, data),
   deleteFinancial: (id)   => req('DELETE', `/financial/${id}`),
 
   // Expenses
   getExpenses:    ()     => req('GET',    '/expenses'),
   addExpense:     (data) => req('POST',   '/expenses', data),
+  updateExpense:  (id, data) => req('PUT', `/expenses/${id}`, data),
   deleteExpense:  (id)   => req('DELETE', `/expenses/${id}`),
 
   // Passwords
   getPasswords:    ()     => req('GET',    '/passwords'),
   addPassword:     (data) => req('POST',   '/passwords', data),
   deletePassword:  (id)   => req('DELETE', `/passwords/${id}`),
+
+  // Budgets
+  getBudgets:    ()               => req('GET',    '/budgets'),
+  setBudget:     (category, limit) => req('PUT',   `/budgets/${encodeURIComponent(category)}`, { limit }),
+  deleteBudget:  (category)       => req('DELETE', `/budgets/${encodeURIComponent(category)}`),
+
+  // Recurring entries
+  getRecurring:    ()     => req('GET',    '/recurring'),
+  addRecurring:    (data) => req('POST',   '/recurring', data),
+  deleteRecurring: (id)   => req('DELETE', `/recurring/${id}`),
+
+  // Savings goals
+  getGoals:        ()             => req('GET',    '/goals'),
+  addGoal:         (data)         => req('POST',   '/goals', data),
+  contributeGoal:  (id, amount)   => req('PUT',    `/goals/${id}/contribute`, { amount }),
+  deleteGoal:      (id)           => req('DELETE', `/goals/${id}`),
 };

@@ -14,14 +14,14 @@ router.get('/', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const { title, amount, category, date, note, clientId } = req.body;
+    const { title, amount, category, type, paymentMethod, date, note, clientId } = req.body;
     if (!title?.trim() || !amount || !category || !date) {
       return res.status(400).json({ message: 'title, amount, category and date are required.' });
     }
     const expense = await Expense.create({
       userId: req.user.userId,
       title: title.trim(),
-      amount, category, date,
+      amount, category, type, paymentMethod, date,
       note: note || '',
       ...(clientId ? { clientId } : {}),
     });
@@ -33,6 +33,22 @@ router.post('/', async (req, res, next) => {
     }
     next(err);
   }
+});
+
+router.put('/:id', async (req, res, next) => {
+  try {
+    const { title, amount, category, type, paymentMethod, date, note } = req.body;
+    if (!title?.trim() || !amount || !category || !date) {
+      return res.status(400).json({ message: 'title, amount, category and date are required.' });
+    }
+    const expense = await Expense.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.userId },
+      { title: title.trim(), amount, category, type, paymentMethod, date, note: note || '' },
+      { new: true, runValidators: true }
+    );
+    if (!expense) return res.status(404).json({ message: 'Expense not found.' });
+    res.json(expense);
+  } catch (err) { next(err); }
 });
 
 router.delete('/:id', async (req, res, next) => {

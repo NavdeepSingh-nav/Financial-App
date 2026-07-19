@@ -36,6 +36,9 @@ app.use('/api/auth',      require('./routes/auth'));
 app.use('/api/financial', require('./routes/financial'));
 app.use('/api/expenses',  require('./routes/expenses'));
 app.use('/api/passwords', require('./routes/passwords'));
+app.use('/api/budgets',   require('./routes/budgets'));
+app.use('/api/recurring', require('./routes/recurring'));
+app.use('/api/goals',     require('./routes/goals'));
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 app.use('/api/docs', swaggerDocs.serve, swaggerDocs.setup);

@@ -442,6 +442,7 @@
 .stat-card.violet::before { background: var(--violet); }
 .stat-card.amber::before { background: var(--amber); }
 .stat-card.primary::before { background: var(--primary); }
+.stat-card.cyan::before { background: var(--cyan); }
 
 .stat-label {
   font-size: 0.72rem;
@@ -472,6 +473,7 @@
 .stat-card.blue .stat-value { color: var(--blue); }
 .stat-card.violet .stat-value { color: var(--violet); }
 .stat-card.amber .stat-value { color: var(--amber); }
+.stat-card.cyan .stat-value { color: var(--cyan); }
 
 /* ── Balance Hero ────────────────────────────────────── */
 .balance-hero {
@@ -710,6 +712,7 @@
 .tx-icon.expense { background: var(--red-ghost); }
 .tx-icon.savings { background: var(--blue-ghost); }
 .tx-icon.investment { background: var(--violet-ghost); }
+.tx-icon.credit { background: var(--green-ghost); }
 
 .tx-info { flex: 1; min-width: 0; }
 
@@ -738,6 +741,7 @@
 .tx-amount.expense { color: var(--red); }
 .tx-amount.savings { color: var(--blue); }
 .tx-amount.investment { color: var(--violet); }
+.tx-amount.credit { color: var(--green); }
 
 .tx-badge {
   font-size: 0.68rem;
@@ -753,6 +757,7 @@
 .tx-badge.expense { background: var(--red-ghost); color: var(--red); }
 .tx-badge.savings { background: var(--blue-ghost); color: var(--blue); }
 .tx-badge.investment { background: var(--violet-ghost); color: var(--violet); }
+.tx-badge.credit { background: var(--green-ghost); color: var(--green); }
 
 .btn-delete {
   width: 28px;
